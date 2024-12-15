@@ -3,7 +3,7 @@ import { open } from "sqlite";
 import crypto from "crypto";
 import fs from "fs";
 
-class DatabaseManager {
+export class DatabaseManager {
   constructor() {}
 
   async connectToDatabase() {

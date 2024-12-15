@@ -1,9 +1,13 @@
 import express from "express";
+import { DatabaseManager } from "./db/db.js";
 
 const app = express();
 
 app.get("/", (req, res) => {
-  res.send({ msg: "Hello, world!" });
+  let db = new DatabaseManager();
+  let me = db.getStudentById("988f8451-a3d2-4011-9769-fb52c68f1457");
+
+  res.send(me);
 });
 
 app.listen(80, () => {
