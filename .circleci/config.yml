@@ -1,32 +1,71 @@
-# This config was automatically generated from your source code
-# Stacks detected: deps:node:.
 version: 2.1
-orbs:
-  node: circleci/node@5
+
+executors:
+  linode-executor:
+    machine: true # Uses a full virtual machine for deployment
+    resource_class: medium # Adjust as needed for build resource requirements
+
 jobs:
-  test-node:
-    # Install node dependencies and run tests
-    executor: node/default
+  build:
+    executor: linode-executor
     steps:
-      - checkout
-      - node/install-packages:
-          pkg-manager: npm
       - run:
-          name: Run tests
-          command: echo \"No test specified in package.json\"
+          name: Update Server and Install Node.js
+          command: |
+            echo "Updating server packages"
+            sudo apt update -y
+            sudo apt install -y curl git build-essential
+            export NVM_DIR="$HOME/.nvm"
+            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            nvm install lts/hydrogen
+            nvm use lts/hydrogen
+      - run:
+          name: Validate Repository Directory
+          command: |
+            echo "Checking repository directory"
+            if [ -d "/home/$USER/my-app" ]; then
+              echo "Directory exists."
+            else
+              echo "Cloning repository"
+              cd "/home/$USER"
+              git clone https://github.com/izacpeterson/canvas2.git my-app || { echo "Git clone failed"; exit 1; }
+            fi
+      - run:
+          name: Build Complete
+          command: echo "Build preparation complete"
+
   deploy:
-    # This is an example deploy job, not actually used by the workflow
-    docker:
-      - image: cimg/base:stable
+    executor: linode-executor
     steps:
-      # Replace this with steps to deploy to users
       - run:
-          name: deploy
-          command: '#e.g. ./deploy.sh'
+          name: Deploy Application
+          command: |
+            echo "Starting deployment"
+            cd "/home/$USER/my-app" || { echo "Directory not found"; exit 1; }
+            git reset --hard master || { echo "Git reset failed"; exit 1; }
+            git pull origin master || { echo "Git pull failed"; exit 1; }
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            npm install
+            npm ci
+            pm2 restart pm2.config.cjs || { echo "PM2 restart failed"; exit 1; }
+      - run:
+          name: Deployment Complete
+          command: echo "Application deployed successfully"
+
 workflows:
-  build-and-test:
+  linode_workflow:
     jobs:
-      - test-node
-    # - deploy:
-    #     requires:
-    #       - test-node
+      - build:
+          filters:
+            branches:
+              only:
+                - main # Adjust this to match your default branch
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - main
