@@ -45,7 +45,11 @@
       {#each schools as school}
         <tr>
           <td>{school.id}</td>
-          <td>{school.name}</td>
+          <td>
+            <a href={`/school/${school.id}`}>
+              {school.name}
+            </a>
+          </td>
           <td>{school.level}</td>
           <td>{school.full_name}</td>
           <td>{school.student_count}</td>

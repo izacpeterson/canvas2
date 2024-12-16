@@ -88,8 +88,10 @@ export default class DatabaseManager {
 
   async getSchool(id) {
     try {
-      const result = await this.pool.query("SELECT * FROM schools WHERE id = $1", [id]);
-      return result.rows[0];
+      const query = await this.loadSQL("./db/queries/get_schools_and_students.sql");
+
+      const result = await this.pool.query(query, [id]);
+      return result.rows;
     } catch (error) {
       console.error("Error getting school:", error);
       throw error;
@@ -151,6 +153,13 @@ export default class DatabaseManager {
 // Singleton instance of DatabaseManager
 const db = new DatabaseManager();
 
+let mockStudents = fs.readFileSync("./db/mock_data/mock_students.json", "utf-8");
+mockStudents = JSON.parse(mockStudents);
+console.log(mockStudents.length);
+
+// for (const student of mockStudents) {
+//   db.upsertStudent(student.firstname, student.lastname, student.dob, student.school_id, student.email);
+// }
 // Example usage (uncomment to test):
 // (async () => {
 //   console.log(await db.now());

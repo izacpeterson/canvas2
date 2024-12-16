@@ -5,6 +5,26 @@
 </script>
 
 <main class="p-4">
+  <div class="breadcrumbs text-sm">
+    <ul>
+      <li>
+        <a
+          href="/"
+          class="link"
+        >
+          Home
+        </a>
+      </li>
+      <li>
+        <a
+          href="/district"
+          class="link"
+        >
+          Districts
+        </a>
+      </li>
+    </ul>
+  </div>
   <table class="table table-xs table-zebra">
     <thead>
       <tr>
