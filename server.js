@@ -1,14 +1,12 @@
 import express from "express";
-import { DatabaseManager } from "./db/db.js";
+import routes from "./routes/index.js";
 
 const app = express();
 
-app.get("/", async (req, res) => {
-  let db = new DatabaseManager();
-  //   await db.setupDatabase();
-  let me = await db.getStudentById("988f8451-a3d2-4011-9769-fb52c68f1457");
+app.use("/api", routes);
 
-  res.send(me);
+app.get("/", async (req, res) => {
+  res.send({});
 });
 
 app.listen(80, () => {

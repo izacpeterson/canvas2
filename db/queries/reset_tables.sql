@@ -1,0 +1,1 @@
+TRUNCATE districts, schools, faculty, students RESTART IDENTITY;

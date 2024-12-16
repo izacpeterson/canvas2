@@ -3,89 +3,111 @@ import { open } from "sqlite";
 import crypto from "crypto";
 import fs from "fs";
 
-export class DatabaseManager {
-  constructor() {}
+import pkg from "pg";
+const { Pool } = pkg;
 
-  async connectToDatabase() {
-    return open({
-      filename: "./db.db",
-      driver: sqlite3.Database
-    });
+export default class DatabaseManager {
+  constructor() {
+    this.pool = new Pool();
   }
 
-  async setupDatabase() {
-    const db = await this.connectToDatabase();
-
-    const schema = fs.readFileSync("./db.sql", "utf-8");
-    await db.exec(schema);
-
-    console.log("Database setup complete!");
-    await db.close();
+  async init() {
+    const client = await this.pool.connect();
   }
 
-  async upsertStudent(student) {
-    const db = await this.connectToDatabase();
-
-    if (!student.id) {
-      student.id = crypto.randomUUID();
-    }
-
-    const query = `
-      INSERT INTO students (id, firstname, lastname, dob, gender, address_street_1, address_street_2, address_city, address_state, address_zip, email, phone)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(id) DO UPDATE SET
-        firstname = excluded.firstname,
-        lastname = excluded.lastname,
-        dob = excluded.dob,
-        gender = excluded.gender,
-        address_street_1 = excluded.address_street_1,
-        address_street_2 = excluded.address_street_2,
-        address_city = excluded.address_city,
-        address_state = excluded.address_state,
-        address_zip = excluded.address_zip,
-        email = excluded.email,
-        phone = excluded.phone;
-    `;
-
-    await db.run(query, [
-      student.id,
-      student.firstname || "",
-      student.lastname || "",
-      student.dob || "",
-      student.gender || "",
-      student.address_street_1 || "",
-      student.address_street_2 || "",
-      student.address_city || "",
-      student.address_state || "",
-      student.address_zip || "",
-      student.email || "",
-      student.phone || ""
-    ]);
-
-    await db.close();
+  async now() {
+    const client = await this.pool.connect();
+    const result = await client.query("SELECT NOW()");
+    return result.rows[0];
   }
 
-  async getStudentById(id) {
-    const db = await this.connectToDatabase();
-    const query = `
-      SELECT * FROM students WHERE id = ?;
-    `;
-    const student = await db.get(query, [id]);
-    await db.close();
-    return student;
+  async loadSQL(filePath) {
+    return fs.readFileSync(filePath, "utf-8");
+  }
+
+  async getDistricts() {
+    const client = await this.pool.connect();
+    let query = await this.loadSQL("./db/queries/get_district_info.sql");
+    const result = await client.query(query);
+    return result.rows;
+  }
+
+  async getDistrict(id) {
+    const client = await this.pool.connect();
+    let query = await this.loadSQL("./db/queries/get_district.sql");
+    const result = await client.query(query, [id]);
+    return result.rows;
+  }
+
+  async getSchools() {
+    const client = await this.pool.connect();
+    const result = await client.query(
+      `SELECT
+        schools.id AS school_id,
+        schools.name AS school_name,
+        schools.level,
+        districts.id AS district_id,
+        districts.name AS district_name
+        FROM schools
+        JOIN districts
+        ON schools.district_id = districts.id;`
+    );
+    return result.rows;
+  }
+
+  async getSchool(id) {
+    const client = await this.pool.connect();
+    const result = await client.query("SELECT * FROM schools WHERE id = $1", [id]);
+    return result.rows[0];
+  }
+
+  async getSchoolsInDistrict(id) {
+    const client = await this.pool.connect();
+    const result = await client.query(
+      "SELECT *, CONCAT(name, ' ', level, ' ', 'School') AS full FROM schools WHERE district_id = $1",
+      [id]
+    );
+
+    return result.rows;
+  }
+
+  async upsertStudent(firstname, lastname, dob, school_id, email) {
+    let query = await this.loadSQL("./db/queries/upsert_student.sql");
+    const values = [firstname, lastname, dob, school_id, email];
+
+    const client = await this.pool.connect();
+
+    console.log(query, values);
+
+    let result = await client.query(query, values);
+
+    return result;
+  }
+
+  async getStudent(id) {
+    const client = await this.pool.connect();
+    const query = await this.loadSQL("./db/queries/get_student.sql");
+    const values = [id];
+    let result = await client.query(query, values);
+
+    return result.rows[0];
+  }
+
+  async upsertFaculty(firstname, lastname, email, school_id, position) {
+    let query = await this.loadSQL("./db/queries/upsert_faculty.sql");
+    const values = [firstname, lastname, email, school_id, position];
+    const client = await this.pool.connect();
+    let result = await client.query(query, values);
+    return result;
   }
 }
 
 let db = new DatabaseManager();
 
-// await db.setupDatabase();
-await db.upsertStudent({
-  id: "988f8451-a3d2-4011-9769-fb52c68f1457",
-  firstname: "Izac",
-  lastname: "Peterson",
-  dob: `${new Date("11-22-1996").getTime()}`,
-  gender: "M",
-  email: "izacpeterson@gmail.com"
-});
+// console.log(
+//   (await db.upsertStudent("Izac", "Peterson", new Date("11-22-1996").getTime(), 2, "izacpeterson@gmail.com")).rows[0]
+// );
 
-console.log(await db.getStudentById("988f8451-a3d2-4011-9769-fb52c68f1457"));
+// let result = await db.upsertFaculty("Riley", "Peterson", "riley@gmail.com", 3, "Teacher");
+// console.log(await db.getSchoolsInDistrict(2));
+// console.log(await db.getStudent(1));
