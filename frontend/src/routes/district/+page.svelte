@@ -4,7 +4,7 @@
   console.log(districts);
 </script>
 
-<main>
+<main class="p-4">
   <table class="table table-xs table-zebra">
     <thead>
       <tr>
@@ -12,17 +12,22 @@
         <td>Name</td>
         <td>School Count</td>
         <td>Student Count</td>
-        <td>Link</td>
       </tr>
     </thead>
     <tbody>
       {#each districts as district}
         <tr>
           <td>{district.id}</td>
-          <td>{district.name}</td>
+          <td>
+            <a
+              href={`/district/${district.id}`}
+              class="link"
+            >
+              {district.name}
+            </a>
+          </td>
           <td>{district.school_count}</td>
           <td>{district.student_count}</td>
-          <td><a href={`/district/${district.id}`}>ClickMe</a></td>
         </tr>
       {/each}
     </tbody>
