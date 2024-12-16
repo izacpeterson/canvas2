@@ -8,9 +8,9 @@
     "setup:frontend": "cd frontend && npm install",
     "setup": "npm run setup:root && npm run setup:frontend",
     "build:frontend": "npm run setup && cd frontend && npm run build",
-    "start": "npm run setup && npm run build:frontend && node app.js",
+    "start": "npm run setup && npm run build:frontend && node index.js",
     "dev:frontend": "npm run setup && cd frontend && npm run dev -- --open",
-    "dev": "npm run setup && concurrently \"npm run dev:frontend\" \"nodemon app.js\""
+    "dev": "npm run setup && concurrently \"npm run dev:frontend\" \"nodemon index.js\""
   },
   "keywords": [],
   "author": "",

@@ -3,12 +3,11 @@ import routes from "./routes/index.js";
 
 const app = express();
 
+import { handler } from "./frontend/build/handler.js";
+
 app.use("/api", routes);
 
-app.get("/", async (req, res) => {
-  res.send({});
-});
-
+app.use("/", handler);
 app.listen(80, () => {
   console.log("App up");
 });

@@ -2,7 +2,8 @@ module.exports = {
   apps: [
     {
       name: "my-app",
-      script: "./index.js", // Adjust to your app's entry point
+      script: "npm",
+      args: "run start", // Specifies the npm script to run
       env: {
         NODE_ENV: "production"
       }
