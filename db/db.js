@@ -153,9 +153,9 @@ export default class DatabaseManager {
 // Singleton instance of DatabaseManager
 const db = new DatabaseManager();
 
-let mockStudents = fs.readFileSync("./db/mock_data/mock_students.json", "utf-8");
-mockStudents = JSON.parse(mockStudents);
-console.log(mockStudents.length);
+// let mockStudents = fs.readFileSync("./db/mock_data/mock_students.json", "utf-8");
+// mockStudents = JSON.parse(mockStudents);
+// console.log(mockStudents.length);
 
 // for (const student of mockStudents) {
 //   db.upsertStudent(student.firstname, student.lastname, student.dob, student.school_id, student.email);
