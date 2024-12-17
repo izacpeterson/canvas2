@@ -148,10 +148,23 @@ export default class DatabaseManager {
       throw error;
     }
   }
+
+  async getFacultyByEmail(email) {
+    try {
+      const query = await this.loadSQL("./db/queries/get_teacher_info.sql");
+      const result = await this.pool.query(query, [email]);
+      return result.rows[0];
+    } catch (error) {
+      console.error("Error getting faculty:", error);
+      throw error;
+    }
+  }
 }
 
 // Singleton instance of DatabaseManager
 const db = new DatabaseManager();
+
+// console.log(await db.getFacultyByEmail("izacpeterson@gmail.com"));
 
 // let mockStudents = fs.readFileSync("./db/mock_data/mock_students.json", "utf-8");
 // mockStudents = JSON.parse(mockStudents);
