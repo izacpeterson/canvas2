@@ -1,6 +1,8 @@
 <script>
+  import { signIn } from "@auth/sveltekit/client";
+
   import "../app.css";
-  let { children } = $props();
+  let { children, data } = $props();
 </script>
 
 <div class="navbar bg-base-100 shadow">
@@ -8,8 +10,12 @@
     href="/"
     class="btn btn-ghost text-xl"
   >
-    Astra Education Technology
+    Astra Education Technologys
   </a>
+
+  <div>
+    <button on:click={signIn}>Signin</button>
+  </div>
 </div>
 
 {@render children()}

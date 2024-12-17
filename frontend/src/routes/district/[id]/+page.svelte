@@ -46,7 +46,10 @@
         <tr>
           <td>{school.id}</td>
           <td>
-            <a href={`/school/${school.id}`}>
+            <a
+              href={`/school/${school.id}`}
+              class="link"
+            >
               {school.name}
             </a>
           </td>
